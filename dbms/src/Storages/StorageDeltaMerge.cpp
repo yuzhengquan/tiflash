@@ -602,6 +602,7 @@ BlockInputStreams StorageDeltaMerge::read(
             col_define.default_value = column.default_value;
         }
         columns_to_read.push_back(col_define);
+        LOG_FMT_DEBUG(log, "Read column name: {} id: {}", col_define.name, col_define.id);
     }
 
     const ASTSelectQuery & select_query = typeid_cast<const ASTSelectQuery &>(*query_info.query);

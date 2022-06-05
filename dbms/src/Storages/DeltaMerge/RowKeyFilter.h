@@ -180,7 +180,7 @@ public:
                 return {};
             if (!block.rows())
                 continue;
-
+            
             auto rowkey_column = RowKeyColumnContainer(block.getByPosition(handle_col_pos).column, rowkey_ranges[0].is_common_handle);
             /// If clean read optimized, only first row's (the smallest) handle is returned as a ColumnConst.
             if (rowkey_column.column->isColumnConst())
@@ -188,7 +188,10 @@ public:
                 for (auto rowkey_range : rowkey_ranges)
                 {
                     if (rowkey_range.check(rowkey_column.getRowKeyValue(0)))
+                    {
+
                         return block;
+                    }
                 }
                 return {};
             }
@@ -198,7 +201,10 @@ public:
             if (!res || !res.rows())
                 continue;
             else
+            {
+
                 return res;
+            }
         }
     }
 

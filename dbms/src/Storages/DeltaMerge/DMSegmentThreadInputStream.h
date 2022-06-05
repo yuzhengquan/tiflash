@@ -129,6 +129,7 @@ protected:
             {
                 if (extra_table_id_index != InvalidColumnID)
                 {
+                    LOG_FMT_TRACE(log, "Segment reading segment [{}] res rows [{}] bolck [{}]", cur_segment->segmentId(), res.rows(), res.dumpStructure());
                     ColumnDefine extra_table_id_col_define = getExtraTableIDColumnDefine();
                     ColumnWithTypeAndName col{{}, extra_table_id_col_define.type, extra_table_id_col_define.name, extra_table_id_col_define.id};
                     size_t row_number = res.rows();
@@ -141,6 +142,7 @@ protected:
                 else
                 {
                     total_rows += res.rows();
+                    LOG_FMT_TRACE(log, "Segment reading segment [{}] taotal_rows [{}] res rows [{}] bolck [{}]", cur_segment->segmentId(), total_rows, res.rows(), res.dumpStructure());
                     return res;
                 }
             }

@@ -1056,6 +1056,7 @@ void DAGQueryBlockInterpreter::executeImpl(DAGPipeline & pipeline)
 
     if (res.before_where)
     {
+        LOG_FMT_DEBUG(log, "before where actions[{}], filter_column_name: {}", res.before_where->dumpActions(), res.filter_column_name);
         // execute where
         executeWhere(pipeline, res.before_where, res.filter_column_name);
         recordProfileStreams(pipeline, query_block.selection_name);
@@ -1071,12 +1072,14 @@ void DAGQueryBlockInterpreter::executeImpl(DAGPipeline & pipeline)
 
     if (res.before_aggregation)
     {
+        LOG_FMT_DEBUG(log, "before_aggregation actions[{}]", res.before_aggregation->dumpActions());
         // execute aggregation
         executeAggregation(pipeline, res.before_aggregation, res.aggregation_keys, res.aggregation_collators, res.aggregate_descriptions, res.is_final_agg);
     }
 
     if (res.before_having)
     {
+        LOG_FMT_DEBUG(log, "before having actions[{}], having_column_name: {}", res.before_having->dumpActions(), res.having_column_name);
         // execute having
         executeWhere(pipeline, res.before_having, res.having_column_name);
         recordProfileStreams(pipeline, query_block.having_name);
@@ -1084,16 +1087,19 @@ void DAGQueryBlockInterpreter::executeImpl(DAGPipeline & pipeline)
 
     if (res.before_order_and_select)
     {
+        LOG_FMT_DEBUG(log, "before_order_and_select actions[{}]", res.before_order_and_select->dumpActions());
         executeExpression(pipeline, res.before_order_and_select);
     }
 
     if (!res.order_columns.empty())
     {
+        LOG_FMT_DEBUG(log, "order_columns");
         // execute topN
         executeOrder(pipeline, res.order_columns);
         recordProfileStreams(pipeline, query_block.limit_or_topn_name);
     }
 
+    LOG_FMT_DEBUG(log, "executeProject");
     // execute final project action
     executeProject(pipeline, final_project);
 
@@ -1103,12 +1109,13 @@ void DAGQueryBlockInterpreter::executeImpl(DAGPipeline & pipeline)
         executeLimit(pipeline);
         recordProfileStreams(pipeline, query_block.limit_or_topn_name);
     }
-
+    LOG_FMT_DEBUG(log, "restorePipelineConcurrency");
     restorePipelineConcurrency(pipeline);
 
     // execute exchange_sender
     if (query_block.exchange_sender)
     {
+        LOG_FMT_DEBUG(log, "handleExchangeSender");
         handleExchangeSender(pipeline);
         recordProfileStreams(pipeline, query_block.exchange_sender_name);
     }

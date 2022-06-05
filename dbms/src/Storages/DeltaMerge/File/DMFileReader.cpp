@@ -169,8 +169,8 @@ DMFileReader::Stream::Stream(
 
     buffer_size = std::min(buffer_size, max_read_buffer_size);
 
-    LOG_TRACE(log,
-              "file size: " << data_file_size << ", estimated read size: " << estimated_size << ", buffer_size: " << buffer_size
+    LOG_TRACE(log, "file_name_base: " << file_name_base << ", data_path: " << data_path << 
+              ", file size: " << data_file_size << ", estimated read size: " << estimated_size << ", buffer_size: " << buffer_size
                             << " (aio_threshold: " << aio_threshold << ", max_read_buffer_size: " << max_read_buffer_size << ")");
 
     if (!reader.dmfile->configuration)
@@ -469,6 +469,8 @@ Block DMFileReader::read()
             e.rethrow();
         }
     }
+
+    LOG_FMT_TRACE(log, "DMFile: {} start_pack_id: {} next_pack_id: {} res row: {} block: {}", start_pack_id, next_pack_id, dmfile->path(), res.rows(), res.dumpStructure());
 
     return res;
 }
