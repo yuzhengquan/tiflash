@@ -89,6 +89,7 @@ protected:
 
     Block readImpl(FilterPtr & res_filter, bool return_filter) override
     {
+        auto r = random();
         if (done)
             return {};
         while (true)
@@ -99,7 +100,7 @@ protected:
                 if (!task)
                 {
                     done = true;
-                    LOG_FMT_DEBUG(log, "Read done");
+                    LOG_FMT_DEBUG(log, "random: {} Read done", r);
                     return {};
                 }
 
@@ -119,7 +120,7 @@ protected:
                         max_version,
                         std::max(expected_block_size, static_cast<size_t>(dm_context->db_context.getSettingsRef().dt_segment_stable_pack_rows)));
                 }
-                LOG_FMT_TRACE(log, "Start to read segment [{}]", cur_segment->segmentId());
+                LOG_FMT_TRACE(log, "rondom {} Start to read segment [{}]", r, cur_segment->segmentId());
             }
             FAIL_POINT_PAUSE(FailPoints::pause_when_reading_from_dt_stream);
 
@@ -129,7 +130,7 @@ protected:
             {
                 if (extra_table_id_index != InvalidColumnID)
                 {
-                    LOG_FMT_TRACE(log, "Segment reading segment [{}] res rows [{}] bolck [{}]", cur_segment->segmentId(), res.rows(), res.dumpStructure());
+                    LOG_FMT_TRACE(log, "random {} Segment reading segment [{}] res rows [{}] bolck [{}]", r, cur_segment->segmentId(), res.rows(), res.dumpStructure());
                     ColumnDefine extra_table_id_col_define = getExtraTableIDColumnDefine();
                     ColumnWithTypeAndName col{{}, extra_table_id_col_define.type, extra_table_id_col_define.name, extra_table_id_col_define.id};
                     size_t row_number = res.rows();
@@ -142,14 +143,15 @@ protected:
                 else
                 {
                     total_rows += res.rows();
-                    LOG_FMT_TRACE(log, "Segment reading segment [{}] taotal_rows [{}] res rows [{}] bolck [{}]", cur_segment->segmentId(), total_rows, res.rows(), res.dumpStructure());
+                    LOG_FMT_TRACE(log, "random {} Segment reading segment [{}] total_rows [{}] res rows [{}] block [{}]", 
+                        r, cur_segment->segmentId(), total_rows, res.rows(), res.dumpStructure());
                     return res;
                 }
             }
             else
             {
                 after_segment_read(dm_context, cur_segment);
-                LOG_FMT_TRACE(log, "Finish reading segment [{}]", cur_segment->segmentId());
+                LOG_FMT_TRACE(log, "random {} Finish reading segment [{}]", r, cur_segment->segmentId());
                 cur_segment = {};
                 cur_stream = {};
             }

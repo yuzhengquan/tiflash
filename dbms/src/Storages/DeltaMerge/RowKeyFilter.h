@@ -164,6 +164,7 @@ public:
     DMRowKeyFilterBlockInputStream(const BlockInputStreamPtr & input, const RowKeyRanges & rowkey_ranges_, size_t handle_col_pos_)
         : rowkey_ranges(rowkey_ranges_)
         , handle_col_pos(handle_col_pos_)
+        , log(&Poco::Logger::get("DMRowKeyFilterBlockInputStream"))
     {
         children.push_back(input);
     }
@@ -173,6 +174,7 @@ public:
 
     Block read() override
     {
+        auto r = random();
         while (true)
         {
             Block block = children.back()->read();
@@ -189,7 +191,7 @@ public:
                 {
                     if (rowkey_range.check(rowkey_column.getRowKeyValue(0)))
                     {
-
+                        LOG_FMT_TRACE(log, "rand: {} block rows: {} block [{}]", r, block.rows(), block.dumpStructure());
                         return block;
                     }
                 }
@@ -202,7 +204,7 @@ public:
                 continue;
             else
             {
-
+                LOG_FMT_TRACE(log, "rand: {} block rows: {} block [{}]", r, block.rows(), block.dumpStructure());
                 return res;
             }
         }
@@ -211,6 +213,7 @@ public:
 private:
     RowKeyRanges rowkey_ranges;
     size_t handle_col_pos;
+    Poco::Logger * const log;
 };
 
 } // namespace DM
