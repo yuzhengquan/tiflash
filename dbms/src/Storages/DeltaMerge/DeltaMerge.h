@@ -89,6 +89,7 @@ private:
     UInt64 last_version = 0;
     size_t last_handle_pos = 0;
     size_t last_handle_read_num = 0;
+    Poco::Logger * log;
 
 public:
     DeltaMergeBlockInputStream(const SkippableBlockInputStreamPtr & stable_input_stream_,
@@ -105,6 +106,7 @@ public:
         , is_common_handle(rowkey_range.is_common_handle)
         , rowkey_column_size(rowkey_range.rowkey_column_size)
         , max_block_size(max_block_size_)
+        , log(&Poco::Logger::get("DeltaMergeBlockInputStream"))
     {
         if constexpr (skippable_place)
         {
@@ -150,6 +152,8 @@ public:
         sk_first_block = doRead();
 
         skip_rows = sk_skip_total_rows;
+        LOG_FMT_TRACE(log, "getSkippedRows sk_skip_stable_rows: {} stable_ignore: {} skip_rows: {} sk_first_block: {}", 
+            sk_skip_stable_rows, stable_ignore, skip_rows, sk_first_block.dumpStructure());
         sk_skip_stable_rows = 0;
         sk_skip_total_rows = 0;
         return true;
@@ -165,6 +169,7 @@ public:
             {
                 Block tmp;
                 tmp.swap(sk_first_block);
+                LOG_FMT_TRACE(log, "rows {} block: {}", tmp.rows(), tmp.dumpStructure());
                 beforeReturnBlock(tmp);
                 ++sk_call_status;
                 return tmp;
@@ -172,8 +177,11 @@ public:
         }
 
         auto block = doRead();
-        if (block)
+        if (block) 
+        {
+            LOG_FMT_TRACE(log, "rows {} block: {}", block.rows(), block.dumpStructure());
             beforeReturnBlock(block);
+        }
         return block;
     }
 
@@ -340,6 +348,7 @@ private:
             return false;
 
         cur_stable_block_rows = block.rows();
+        LOG_FMT_TRACE(log, "fillStableBlockIfNeeded block rows {} block [{}]", cur_stable_block_rows, block.dumpStructure());
         for (size_t column_id = 0; column_id < num_columns; ++column_id)
             cur_stable_block_columns.push_back(block.getByPosition(column_id).column);
         return true;
@@ -492,6 +501,8 @@ private:
         // Note that the rows between [use_delta_offset, use_delta_offset + write_rows) are guaranteed sorted,
         // otherwise we won't read them in the same range.
         auto actual_write = delta_value_reader->readRows(output_columns, use_delta_offset, write_rows, &rowkey_range);
+        LOG_FMT_TRACE(log, "writeInsertFromDelta actual_write: {} use_delta_offset: {} write_rows: {}", 
+            actual_write, use_delta_offset, write_rows);
 
         if constexpr (skippable_place)
         {
