@@ -56,6 +56,7 @@ class ConcatSkippableBlockInputStream : public SkippableBlockInputStream
 {
 public:
     ConcatSkippableBlockInputStream(SkippableBlockInputStreams inputs_)
+        : log(&Poco::Logger::get("ConcatSkippableBlockInputStream"))
     {
         children.insert(children.end(), inputs_.begin(), inputs_.end());
         current_stream = children.begin();
@@ -67,6 +68,7 @@ public:
 
     bool getSkippedRows(size_t & skip_rows) override
     {
+        auto r = random();
         skip_rows = 0;
         while (current_stream != children.end())
         {
@@ -75,7 +77,7 @@ public:
             size_t skip;
             bool has_next_block = skippable_stream->getSkippedRows(skip);
             skip_rows += skip;
-
+            LOG_FMT_TRACE(log, "random {} skip_rows {} skip {} has_next_block {}", r, skip_rows, skip, has_next_block);
             if (has_next_block)
             {
                 return true;
@@ -93,7 +95,7 @@ public:
     Block read() override
     {
         Block res;
-
+        auto r = random();
         while (current_stream != children.end())
         {
             res = (*current_stream)->read();
@@ -107,11 +109,13 @@ public:
             }
         }
 
+        LOG_FMT_TRACE(log, "random {} block_rows {} block [{}]", r, res.rows(), res.dumpStructure());
         return res;
     }
 
 private:
     BlockInputStreams::iterator current_stream;
+    Poco::Logger * log;
 };
 
 } // namespace DM
