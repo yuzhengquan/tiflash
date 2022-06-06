@@ -369,6 +369,17 @@ Block Block::cloneWithColumns(MutableColumns && columns) const
     return res;
 }
 
+Block Block::copyWithColumns(const MutableColumns & columns) const
+{
+    Block res;
+
+    size_t num_columns = data.size();
+    for (size_t i = 0; i < num_columns; ++i)
+        res.insert({columns[i], data[i].type, data[i].name, data[i].column_id});
+
+    return res;
+}
+
 
 Block Block::sortColumns() const
 {
