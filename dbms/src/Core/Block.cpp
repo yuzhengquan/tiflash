@@ -369,6 +369,18 @@ Block Block::cloneWithColumns(MutableColumns && columns) const
     return res;
 }
 
+Block Block::copyWithColumns(const MutableColumns & columns) const
+{
+    Block res;
+
+    size_t num_columns = data.size();
+    for (size_t i = 0; i < num_columns; ++i)
+        res.insert({nullptr, data[i].type, data[i].name, data[i].column_id});
+
+    return res;
+}
+
+
 Block Block::sortColumns() const
 {
     Block sorted_block;
@@ -547,18 +559,6 @@ void getBlocksDifference(const Block & lhs, const Block & rhs, std::string & out
         rhs_diff_writer << it->dumpStructure();
         rhs_diff_writer << ", position: " << rhs.getPositionByName(it->name) << '\n';
     }
-}
-
-std::string dumpMutableColumns(const MutableColumns & columns)
-{
-    WriteBufferFromOwnString out;
-    for (auto it = columns.begin(); it != columns.end(); ++it)
-    {
-        if (it != columns.begin())
-            out << ", ";
-        out << it->dumpStructure();
-    }
-    return out.str();
 }
 
 void Block::clear()
