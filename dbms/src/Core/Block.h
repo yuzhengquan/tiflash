@@ -132,7 +132,6 @@ public:
     /** Replace columns in a block */
     void setColumns(MutableColumns && columns);
     Block cloneWithColumns(MutableColumns && columns) const;
-    Block copyWithColumns(const MutableColumns & columns) const;
 
     /** Get a block with columns that have been rearranged in the order of their names. */
     Block sortColumns() const;
@@ -164,6 +163,7 @@ void assertBlocksHaveEqualStructure(const Block & lhs, const Block & rhs, const 
 /// Calculate difference in structure of blocks and write description into output strings. NOTE It doesn't compare values of constant columns.
 void getBlocksDifference(const Block & lhs, const Block & rhs, std::string & out_lhs_diff, std::string & out_rhs_diff);
 
+std::string dumpMutableColumns(const MutableColumns & columns);
 
 /** Additional data to the blocks. They are only needed for a query
   * DESCRIBE TABLE with Distributed tables.

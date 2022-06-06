@@ -501,10 +501,8 @@ private:
         // Note that the rows between [use_delta_offset, use_delta_offset + write_rows) are guaranteed sorted,
         // otherwise we won't read them in the same range.
         auto actual_write = delta_value_reader->readRows(output_columns, use_delta_offset, write_rows, &rowkey_range);
-        Block tmp;
-        tmp.copyWithColumns(output_columns);
         LOG_FMT_TRACE(log, "writeInsertFromDelta actual_write: {} use_delta_offset: {} write_rows: {} block: {}", 
-            actual_write, use_delta_offset, write_rows, tmp.dumpStructure());
+            actual_write, use_delta_offset, write_rows, dumpMutableColumns(output_columns));
 
         if constexpr (skippable_place)
         {
