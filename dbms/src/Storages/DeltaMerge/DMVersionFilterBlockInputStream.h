@@ -55,12 +55,15 @@ public:
         handle_col_pos = input_header.getPositionByName(EXTRA_HANDLE_COLUMN_NAME);
         version_col_pos = input_header.getPositionByName(VERSION_COLUMN_NAME);
         delete_col_pos = input_header.getPositionByName(TAG_COLUMN_NAME);
+        rand = random();
+        LOG_FMT_TRACE(log, "random {} handle_col_pos {} version_col_pos {} delete_col_pos {} query id {}", 
+            rand, handle_col_pos, version_col_pos, delete_col_pos, (query_id.empty() ? String("<non-query>") : query_id));
     }
 
     ~DMVersionFilterBlockInputStream()
     {
-        LOG_DEBUG(log,
-                  "Total rows: " << total_rows << ", pass: " << DB::toString((Float64)passed_rows * 100 / total_rows, 2)
+        LOG_DEBUG(log, "random: " << rand << 
+                  ", Total rows: " << total_rows << ", pass: " << DB::toString((Float64)passed_rows * 100 / total_rows, 2)
                                  << "%, complete pass: " << DB::toString((Float64)complete_passed * 100 / total_blocks, 2)
                                  << "%, complete not pass: " << DB::toString((Float64)complete_not_passed * 100 / total_blocks, 2)
                                  << "%, not clean: " << DB::toString((Float64)not_clean_rows * 100 / passed_rows, 2) //
@@ -227,6 +230,8 @@ private:
     size_t complete_not_passed = 0;
     size_t not_clean_rows = 0;
     size_t effective_num_rows = 0;
+
+    size_t rand = 0;
 
     Poco::Logger * const log;
 };
